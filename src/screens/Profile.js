@@ -27,6 +27,32 @@ export default function Profile() {
   const [password, setPassword] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [editable, setEditable] = useState(false);
+  const { updateUser, signOut} = useAuth();
+
+  async function handleSubmit(){
+    setError("");
+    if(!email.trim() || !username.trim() || !password.trim()){
+      setError("Preencha todos os campos");
+      return;
+    }
+    try{
+      await api.patch("profile", {
+        email,
+        username,
+        password
+      })
+      Alert.alert("Sucesso", "Usuario atualizado!");
+      setEditable(false)
+    }catch(error){
+      if(error.response){
+        setError(error.response.data.message);
+      }
+      else {
+        setError ("Não foi possivel se comunicar com o servidor.");
+      }
+    }
+  }
+
 
   async function pickImage() {
     let permissionResult =
@@ -133,13 +159,17 @@ export default function Profile() {
       <View style={{ backgroundColor: "#1B1B1F", alignItems: "center" }}>
         <View style={style.header}>
           <TouchableOpacity onPress={() => setEditable(true)}>
+          <View style={{backgroundColor:"#fff" , width:20}}>
             <MaterialCommunityIcons name="pencil" size={28} color="#fff" />
+            </View>
           </TouchableOpacity>
           <Text style={{ fontSize: 28, fontWeight: "600", color: "#ffffff" }}>
             Perfil
           </Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={()=> signOut()}>
+            <View style={{backgroundColor:"#fff" , width:20}}>
             <MaterialCommunityIcons name="logout" size={28} color="#fff" />
+            </View>
           </TouchableOpacity>
         </View>
         { <View style={style.profileImageContainer}>
@@ -228,7 +258,7 @@ export default function Profile() {
         {editable && (
         <View style={{ gap: 8, marginTop: 16, flexDirection: "row" }}>
           <MyButton style={{ flex: 1 }} text="Cancelar" onPress={()=> setEditable(false)}/>
-          <MyButton style={{ flex: 1 }} text="Salvar alterações" />
+          <MyButton style={{ flex: 1 }} text="Salvar alterações" onPress={()=> handleSubmit()}/>
         </View>
         )}
       </View>
